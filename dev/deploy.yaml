@@ -1,0 +1,47 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dapps-election-deploy
+  labels:
+    app: dapps-election
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dapps-election
+  template:
+    metadata:
+      labels:
+        app: dapps-election
+    spec:
+      containers:
+      - name: dapps-election
+        image: cyyeong/dapps-election:0.1.22
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: dapps-election-svc
+  labels:
+    app: dapps-election
+spec:
+  # LoadBalancer is the default: Create an HA proxy in the cloud provider
+  # with an External IP address - *Only supported by some cloud providers*
+  # loadbalancer access via externalIp:port (8999)
+  # NodePort | ClusterIP | Loadbalancer
+  type: LoadBalancer
+  ports:
+    # Accept traffic sent to port 8080
+    - name: http
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+  selector:
+    # Loadbalance traffic across Pods matching
+    # this label selector
+    app: dapps-election
